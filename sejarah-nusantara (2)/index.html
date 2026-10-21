@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jejak Waktu Nusantara · Belajar Sejarah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#2f86d6;--blue2:#3d97e8;--navy:#08122d;--gold:#f9b934;--ok:#38c172;--bad:#ef5350}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#0a1a3a;font-family:'Roboto',system-ui,sans-serif;color:#fff}
+button{font-family:inherit;cursor:pointer;border:0}
+
+/* ===== LATAR =====  Simpan gambar latar sebagai "latar.jpg" di folder yang sama dengan index.html */
+.bg-fallback{position:fixed;inset:0;background:
+ radial-gradient(circle at 66% 48%,#fff6c4 0,#ffd36b 4%,rgba(255,190,90,.55) 14%,transparent 38%),
+ linear-gradient(#1b4f9c 0,#5f8fd0 30%,#f6b45a 52%,#1c5aa8 53%,#0d3a85 75%,#08224f 100%)}
+.bg-img{position:fixed;inset:0;background:url('latar.jpg') center/cover no-repeat}
+.bg-shade{position:fixed;inset:0;transition:.5s;background:linear-gradient(90deg,rgba(6,14,38,.93) 0%,rgba(6,14,38,.62) 42%,rgba(6,14,38,0) 74%)}
+body[data-mode=page] .bg-shade{background:rgba(5,12,34,.62)}
+body[data-mode=splash] .bg-shade{background:linear-gradient(0deg,rgba(5,12,34,.85),rgba(5,12,34,.05) 60%)}
+
+/* ===== TOP BAR ===== */
+#top{position:fixed;top:0;left:0;right:0;height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 28px 0 54px;z-index:20;gap:12px}
+#ttl{font-size:21px;font-weight:700;text-shadow:0 2px 8px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#right{display:flex;align-items:center;gap:12px}
+#back{background:rgba(8,18,45,.8);color:#fff;border-radius:22px;padding:9px 20px;font-size:14px;border:1px solid rgba(255,255,255,.12)}
+#back:hover{background:rgba(30,60,120,.9)}
+#hud{display:flex;align-items:center;gap:9px;background:rgba(8,18,45,.8);border:1px solid rgba(255,255,255,.12);border-radius:22px;padding:7px 14px;font-size:13px;position:relative}
+#hud b{color:var(--gold)}
+.xpb{width:90px;height:9px;border-radius:6px;background:rgba(255,255,255,.16);overflow:hidden}
+.xpb i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffd34d,#ff9f1c);transition:width .6s}
+.pop{position:absolute;right:10px;top:42px;font-weight:900;font-size:22px;pointer-events:none;animation:pop 1.6s forwards;text-shadow:0 2px 6px #000;white-space:nowrap}
+@keyframes pop{0%{opacity:0;transform:translateY(0) scale(.7)}15%{opacity:1;transform:translateY(8px) scale(1.2)}100%{opacity:0;transform:translateY(46px) scale(1)}}
+
+#app{position:fixed;inset:0;z-index:5}
+
+/* ===== MENU ala GIM ===== */
+.menu{position:absolute;left:0;top:72px;bottom:0;width:min(660px,100%);display:flex;flex-direction:column;justify-content:center;gap:15px;padding-bottom:40px}
+.card{position:relative;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border:2px solid rgba(70,150,230,.85);border-radius:14px;background:rgba(8,22,60,.72);color:#7cc0ff;padding:14px 28px;transition:all .35s cubic-bezier(.3,1.3,.5,1);backdrop-filter:blur(2px)}
+.card h3{font-size:25px;font-weight:700;line-height:1.15}
+.card .sub{font-size:14px;margin-top:3px;opacity:.95}
+.card .chev{font-size:30px;opacity:0;transition:.3s}
+.card[data-d="0"]{margin-left:30px;width:543px;padding:21px 30px;color:#fff;background:linear-gradient(180deg,var(--blue2),#2a7bc9);border-color:#e4f0ff;box-shadow:0 0 30px rgba(80,170,255,.6),inset 0 0 12px rgba(255,255,255,.15)}
+.card[data-d="0"] h3{font-size:31px}.card[data-d="0"] .sub{font-size:17px}.card[data-d="0"] .chev{opacity:1}
+.card[data-d="1"]{margin-left:80px;width:444px}
+.card[data-d="2"]{margin-left:105px;width:394px;opacity:.78}
+.card[data-d="3"]{margin-left:130px;width:344px;opacity:.55}
+.card.locked[data-d="0"]{background:linear-gradient(180deg,#31679f,#27527f);box-shadow:0 0 18px rgba(80,170,255,.35)}
+.card.locked:not([data-d="0"]){opacity:.6}
+.cta{position:absolute;right:42px;bottom:42px;background:var(--gold);color:#1b1b1b;font-size:22px;font-weight:500;padding:17px 40px;border-radius:40px;box-shadow:0 8px 24px rgba(0,0,0,.4);transition:.2s;animation:float 2.6s ease-in-out infinite}
+.cta:hover{transform:scale(1.05);filter:brightness(1.07)}
+.cta:disabled{background:#8a94a8;color:#2a2f3b;animation:none;cursor:not-allowed}
+@keyframes float{50%{transform:translateY(-5px)}}
+
+/* ===== SPLASH ===== */
+.splash{position:absolute;left:0;right:0;bottom:0;padding:0 7% 8vh;max-width:900px}
+.splash small{letter-spacing:.35em;color:var(--gold);font-weight:700;font-size:14px}
+.splash h1{font-size:clamp(40px,8vw,88px);line-height:1;font-weight:900;margin:10px 0;text-shadow:0 4px 24px rgba(0,0,0,.7)}
+.splash p{font-size:18px;max-width:560px;opacity:.95;margin-bottom:22px;text-shadow:0 2px 8px #000}
+.splash input{font:inherit;font-size:18px;padding:14px 20px;border-radius:30px;border:2px solid rgba(255,255,255,.4);background:rgba(8,18,45,.7);color:#fff;width:min(300px,100%);margin-right:12px;margin-bottom:12px}
+.splash .cta{position:static;display:inline-block;animation:none}
+.linkbtn{display:block;margin-top:14px;background:none;color:#9fb7dd;font-size:13px;text-decoration:underline}
+
+/* ===== PANEL KONTEN ===== */
+.page{position:absolute;inset:80px 3% 22px;display:flex;justify-content:center;min-height:0}
+.panel{width:min(940px,100%);max-height:100%;overflow:auto;background:rgba(7,18,46,.86);backdrop-filter:blur(8px);border:2px solid rgba(80,160,240,.45);border-radius:20px;padding:28px 34px;box-shadow:0 14px 50px rgba(0,0,0,.5);line-height:1.65;font-size:16.5px}
+.panel h2{font-size:28px;margin-bottom:10px;color:#fff}
+.panel h3{font-size:19px;margin:20px 0 6px;color:var(--gold)}
+.panel p{margin:8px 0}
+.panel ul,.panel ol{margin:8px 0 8px 22px}
+.panel li{margin:5px 0}
+.panel b{color:#bfe0ff}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:14px;margin:12px 0}
+.tile{background:rgba(47,134,214,.16);border:1px solid rgba(100,175,255,.4);border-radius:14px;padding:14px 16px}
+.tile h4{color:var(--gold);font-size:17px;margin-bottom:4px}
+.tile .em{font-size:30px}
+.box{border-left:5px solid var(--gold);background:rgba(249,185,52,.12);padding:12px 16px;border-radius:0 12px 12px 0;margin:14px 0}
+.box.blue{border-color:var(--blue2);background:rgba(61,151,232,.14)}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:15px}
+th,td{border:1px solid rgba(120,180,255,.35);padding:9px 11px;text-align:left;vertical-align:top}
+th{background:rgba(47,134,214,.35)}
+.flow{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;margin:12px 0}
+.flow div{flex:1 1 160px;background:rgba(47,134,214,.2);border:1px solid rgba(100,175,255,.45);border-radius:12px;padding:10px 12px;font-size:14.5px;position:relative}
+.flow div b{display:block;color:var(--gold);font-size:16px}
+.act{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px;align-items:center}
+.btn{background:var(--gold);color:#1b1b1b;font-weight:700;font-size:16px;padding:13px 28px;border-radius:30px;transition:.2s}
+.btn:hover{transform:scale(1.04)}.btn:disabled{background:#6b768c;color:#222;cursor:not-allowed;transform:none}
+.btn.ghost{background:rgba(255,255,255,.12);color:#fff;font-weight:500}
+.chip{display:inline-block;background:rgba(255,255,255,.12);border-radius:20px;padding:4px 12px;font-size:13px;margin-right:6px}
+
+/* ===== KUIS ===== */
+.qhead{display:flex;justify-content:space-between;font-size:14px;opacity:.9;margin-bottom:10px;flex-wrap:wrap;gap:6px}
+.qbar{height:8px;border-radius:5px;background:rgba(255,255,255,.15);overflow:hidden;margin-bottom:18px}
+.qbar i{display:block;height:100%;background:linear-gradient(90deg,#3d97e8,#7ad0ff);transition:width .4s}
+.qtext{font-size:21px;font-weight:500;line-height:1.5;margin-bottom:16px}
+.opt{display:block;width:100%;text-align:left;margin:10px 0;padding:14px 18px;border-radius:12px;border:2px solid rgba(80,160,240,.55);background:rgba(20,60,130,.35);color:#fff;font-size:16.5px;transition:.2s}
+.opt:hover:not(:disabled){background:rgba(61,151,232,.5);transform:translateX(5px)}
+.opt.ok{background:rgba(56,193,114,.35);border-color:var(--ok)}
+.opt.bad{background:rgba(239,83,80,.35);border-color:var(--bad);animation:shake .4s}
+.opt:disabled{cursor:default}
+@keyframes shake{25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.fb{margin-top:14px;padding:14px 16px;border-radius:12px;background:rgba(255,255,255,.08)}
+.big{font-size:64px;text-align:center}.center{text-align:center}
+
+/* ===== VIDEO ===== */
+.vwrap{position:relative;aspect-ratio:16/9;background:#000;border-radius:14px;overflow:hidden;border:2px solid rgba(80,160,240,.5)}
+.vwrap iframe,.vwrap #yt{position:absolute;inset:0;width:100%;height:100%}
+.vshield{position:absolute;inset:0;z-index:3;cursor:pointer}
+.vplay{position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;font-size:70px;background:rgba(0,0,0,.35);pointer-events:none;transition:.2s}
+.vplay.hide{opacity:0}
+.vctl{display:flex;align-items:center;gap:12px;margin-top:12px}
+.vbar{flex:1;height:11px;border-radius:7px;background:rgba(255,255,255,.18);overflow:hidden}
+.vbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffd34d,#ff9f1c)}
+.lockmsg{font-size:14px;margin-top:10px;opacity:.95}
+
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(30px);background:#101c3d;border:1px solid var(--blue);padding:12px 22px;border-radius:30px;opacity:0;transition:.3s;z-index:60;pointer-events:none;font-size:15px}
+#toast.show{opacity:1;transform:translateX(-50%)}
+#modal{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;background:rgba(2,6,20,.75)}
+#modal.on{display:flex}
+#modal .mb{width:min(480px,92%);background:#0c2150;border:2px solid var(--gold);border-radius:22px;padding:30px;text-align:center;animation:pop2 .5s}
+@keyframes pop2{from{transform:scale(.6);opacity:0}}
+
+@media(max-width:760px){
+ #top{padding:0 14px;height:auto;min-height:64px;flex-wrap:wrap;padding-top:8px}
+ #ttl{font-size:16px;width:100%}.xpb{width:60px}
+ .menu{top:110px;gap:11px}
+ .card[data-d]{margin-left:12px!important;width:calc(100% - 24px)!important}
+ .card h3,.card[data-d="0"] h3{font-size:22px}
+ .cta{right:50%;transform:translateX(50%);bottom:22px;font-size:19px;padding:14px 30px;animation:none}
+ .page{inset:112px 8px 10px}.panel{padding:20px 18px;font-size:15.5px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body data-mode="splash">
+<div class="bg-fallback"></div><div class="bg-img"></div><div class="bg-shade"></div>
+<div id="top">
+  <div id="ttl"></div>
+  <div id="right">
+    <div id="hud" title="Poin pengalaman"><span>Lv <b id="lv">1</b></span><span id="lvn" style="opacity:.8"></span><div class="xpb"><i id="xpf"></i></div><b id="xpt">0 XP</b></div>
+    <button id="back">← Kembali</button>
+  </div>
+</div>
+<main id="app"></main>
+<div id="toast"></div>
+<div id="modal"><div class="mb" id="mb"></div></div>
+
+<script>
+/* =====================  DATA KONTEN  ===================== */
+const LEVELS=['Murid Baru','Penjelajah Arsip','Detektif Sumber','Navigator Nusantara','Sejarawan Muda','Penjaga Waktu'];
+
+const CH=[
+{id:1,title:'Chapter 1',sub:'Memahami Sejarah: Tokoh, Waktu, Fungsi & Metode',
+ topics:[
+ {id:'m1',icon:'📜',title:'Pengertian Sejarah',sub:'Menurut berbagai tokoh',html:`
+  <h2>📜 Pengertian Sejarah menurut Para Tokoh</h2>
+  <h3>Asal kata</h3>
+  <ul>
+   <li><b>Arab – <i>syajaratun</i></b>: pohon; dari sini muncul makna silsilah/asal-usul. Kata ini diserap ke bahasa Melayu menjadi “sejarah”.</li>
+   <li><b>Yunani – <i>historia</i></b>: penyelidikan, pengetahuan yang diperoleh lewat penelitian.</li>
+   <li><b>Inggris – <i>history</i></b>, <b>Belanda – <i>geschiedenis</i></b> (dari <i>geschieden</i> = terjadi), <b>Jerman – <i>geschichte</i></b> (sesuatu yang telah terjadi).</li>
+  </ul>
+  <h3>Kata para tokoh</h3>
+  <div class="grid">
+   <div class="tile"><div class="em">🏛️</div><h4>Herodotus</h4>Dijuluki “Bapak Sejarah”. Memakai kata <i>historia</i> untuk penyelidikannya tentang Perang Yunani–Persia.</div>
+   <div class="tile"><div class="em">🕌</div><h4>Ibnu Khaldun</h4>Sejarah bukan sekadar daftar peristiwa, tetapi catatan tentang masyarakat dan peradaban, lengkap dengan sebab-sebab dan perkembangannya (<i>Muqaddimah</i>).</div>
+   <div class="tile"><div class="em">🇮🇩</div><h4>Moh. Yamin</h4>Sejarah adalah ilmu pengetahuan hasil penyelidikan tentang kejadian masa lampau yang berkaitan dengan manusia, disusun secara ilmiah.</div>
+   <div class="tile"><div class="em">📚</div><h4>Kuntowijoyo</h4>Sejarah adalah rekonstruksi masa lalu: apa yang dipikirkan, dikatakan, dirasakan, dikerjakan, dan dialami manusia.</div>
+   <div class="tile"><div class="em">🧩</div><h4>R. Moh. Ali</h4>Tiga pengertian: (1) jumlah perubahan dan peristiwa di sekitar kita, (2) cerita tentang perubahan itu, (3) ilmu yang menyelidikinya.</div>
+   <div class="tile"><div class="em">💬</div><h4>E.H. Carr</h4>Sejarah adalah dialog tanpa akhir antara sejarawan dan fakta-faktanya, antara masa kini dan masa lampau.</div>
+  </div>
+  <div class="box blue"><b>Kesimpulan:</b> sejarah punya tiga wajah: <b>peristiwa</b> (apa yang terjadi), <b>kisah</b> (cerita tentang peristiwa itu), dan <b>ilmu</b> (cara meneliti dan menyusunnya). Unsur utamanya: <b>manusia, ruang, waktu,</b> dan <b>perubahan</b>.</div>`},
+ {id:'m2',icon:'⏳',title:'Sinkronik & Diakronik',sub:'Cara memandang waktu',html:`
+  <h2>⏳ Konsep Sinkronik, Diakronik, dan Kronologis</h2>
+  <div class="grid">
+   <div class="tile"><div class="em">📸</div><h4>Sinkronik (<i>sin</i> = bersama)</h4>Meneliti <b>satu kurun waktu tertentu</b> tetapi <b>meluas ke banyak aspek</b> (politik, ekonomi, sosial, budaya). Ibarat <b>foto/potret</b>.<br><i>Contoh:</i> kehidupan sosial-ekonomi masyarakat Mataram Kuno pada abad ke-9.</div>
+   <div class="tile"><div class="em">🎞️</div><h4>Diakronik (<i>dia</i> = melintasi)</h4>Meneliti <b>satu tema</b> yang <b>memanjang dalam waktu</b>, melihat perubahan dan kesinambungan. Ibarat <b>film/video</b>.<br><i>Contoh:</i> perkembangan pers Indonesia dari masa kolonial sampai sekarang.</div>
+  </div>
+  <h3>Kronologis</h3>
+  <p><b>Kronologi</b> adalah urutan peristiwa berdasarkan waktu terjadinya. Kronologi adalah “tulang punggung” sejarah: tanpa urutan waktu kita tidak bisa melihat sebab-akibat. Diakronik selalu bergantung pada kronologi.</p>
+  <table><tr><th></th><th>Sinkronik</th><th>Diakronik</th></tr>
+  <tr><td>Fokus</td><td>Luas (banyak aspek)</td><td>Panjang (satu tema)</td></tr>
+  <tr><td>Waktu</td><td>Satu kurun/periode</td><td>Rentang waktu panjang</td></tr>
+  <tr><td>Hasil</td><td>Gambaran struktur & kondisi</td><td>Gambaran proses & perubahan</td></tr>
+  <tr><td>Analogi</td><td>Foto</td><td>Video</td></tr></table>
+  <div class="box"><b>Tips ujian:</b> kata kunci “<i>pada tahun/abad tertentu + banyak aspek</i>” → sinkronik. Kata kunci “<i>perkembangan/dari… hingga…</i>” → diakronik.</div>`},
+ {id:'m3',icon:'🧭',title:'Fungsi Sejarah',sub:'Untuk apa belajar sejarah?',html:`
+  <h2>🧭 Fungsi Sejarah</h2>
+  <div class="grid">
+   <div class="tile"><div class="em">🎓</div><h4>Edukatif</h4>Memberi pelajaran dari pengalaman masa lalu agar tidak mengulang kesalahan dan bijak memutuskan.<br><i>Contoh:</i> belajar dari krisis ekonomi 1998.</div>
+   <div class="tile"><div class="em">🔥</div><h4>Inspiratif</h4>Memberi ilham dan semangat dari keteladanan tokoh serta peristiwa.<br><i>Contoh:</i> semangat Sumpah Pemuda 1928.</div>
+   <div class="tile"><div class="em">🎭</div><h4>Rekreatif</h4>Memberi rasa senang dan wawasan lewat kisah, wisata, dan karya seni sejarah.<br><i>Contoh:</i> berwisata ke Candi Borobudur.</div>
+   <div class="tile"><div class="em">🛠️</div><h4>Instruktif</h4>Membantu pengajaran keterampilan dan pengetahuan praktis.<br><i>Contoh:</i> mempelajari teknik pembuatan perahu pinisi dari catatan sejarah.</div>
+  </div>
+  <div class="box blue">Selain itu, sejarah menumbuhkan <b>identitas</b> dan <b>kesadaran kebangsaan</b>: kita tahu dari mana kita berasal, sehingga bisa menentukan ke mana melangkah.</div>`},
+ {id:'m4',icon:'🔍',title:'Metodologi Sejarah',sub:'Heuristik sampai historiografi',html:`
+  <h2>🔍 Metodologi Sejarah</h2>
+  <p>Sejarawan bekerja seperti detektif: tidak boleh asal percaya. Langkah-langkahnya setelah memilih topik:</p>
+  <div class="flow">
+   <div><b>1. Heuristik</b>Mengumpulkan sumber (lisan, tertulis, benda).</div>
+   <div><b>2. Kritik</b>Menguji sumber: <i>ekstern</i> (keaslian) &amp; <i>intern</i> (kredibilitas isi).</div>
+   <div><b>3. Interpretasi</b>Menafsirkan fakta: <i>analisis</i> (menguraikan) dan <i>sintesis</i> (menyatukan).</div>
+   <div><b>4. Historiografi</b>Menulis dan menyajikan hasil penelitian.</div>
+  </div>
+  <h3>Jenis sumber</h3>
+  <ul>
+   <li><b>Sumber primer</b>: dibuat saat peristiwa terjadi atau oleh saksi mata (prasasti, surat, arsip, Babad Diponegoro).</li>
+   <li><b>Sumber sekunder</b>: dibuat setelah peristiwa, berdasarkan sumber lain (buku pelajaran, artikel, film dokumenter).</li>
+   <li>Menurut bentuknya: <b>tertulis</b>, <b>lisan</b>, dan <b>benda</b> (artefak, bangunan, foto).</li>
+  </ul>
+  <h3>Dua jenis kritik</h3>
+  <ul>
+   <li><b>Kritik ekstern</b>: apakah sumber ini <i>asli</i>? (bahan kertas, tinta, gaya tulisan, tahun pembuatan)</li>
+   <li><b>Kritik intern</b>: apakah isinya <i>dapat dipercaya</i>? (siapa penulisnya, apakah ia saksi, apakah ia berpihak)</li>
+  </ul>
+  <div class="box">Kuntowijoyo merinci tahapannya menjadi: pemilihan topik → heuristik → verifikasi (kritik) → interpretasi → historiografi.</div>`}
+ ],
+ videos:[
+  {id:'v1',yt:'nNKF0tJIQ3o',start:0,title:'Sinkronis, Diakronis & Kronologis',sub:'Konsep waktu dalam sejarah'},
+  {id:'v2',yt:'J6AiwCDjfj8',start:0,title:'Metodologi Sejarah',sub:'Cara kerja sejarawan'}
+ ],
+ quiz:[
+  {q:'Kata “sejarah” berasal dari bahasa Arab <i>syajaratun</i> yang berarti…',o:['Pohon / silsilah keturunan','Penyelidikan','Peristiwa penting','Catatan harian'],a:0,h:'Bayangkan bentuk bagan silsilah keluarga.',e:'<i>Syajaratun</i> berarti pohon; silsilah digambarkan bercabang seperti pohon.'},
+  {q:'Herodotus dijuluki “Bapak Sejarah” karena menulis <i>historia</i> tentang…',o:['Penyelidikan Perang Yunani–Persia','Silsilah raja-raja Mesir','Penanggalan kalender Romawi','Peta jalur perdagangan'],a:0,h:'Ia dari Yunani dan perangnya melawan sebuah kekaisaran besar di Asia.',e:'<i>Historia</i> = penyelidikan; Herodotus menyelidiki Perang Yunani–Persia.'},
+  {q:'“Sejarah adalah dialog tanpa akhir antara sejarawan dan fakta-faktanya.” Pernyataan ini dikaitkan dengan…',o:['E.H. Carr','Ibnu Khaldun','Moh. Yamin','Herodotus'],a:0,h:'Tokoh asal Inggris.',e:'E.H. Carr menekankan interaksi terus-menerus antara sejarawan dan fakta, masa kini dan masa lalu.'},
+  {q:'Menurut Ibnu Khaldun, sejarah tidak hanya mencatat peristiwa, tetapi juga…',o:['Menelaah sebab-akibat dan perkembangan masyarakat','Menghafal tahun kejadian','Menyusun silsilah raja saja','Menggambar peta pelayaran'],a:0,h:'Karyanya berjudul Muqaddimah.',e:'Ibnu Khaldun menekankan analisis sebab-akibat dalam masyarakat dan peradaban.'},
+  {q:'Penelitian “Perkembangan alat transportasi di Indonesia dari masa kerajaan hingga kini” termasuk kajian…',o:['Diakronik','Sinkronik','Geografis','Sosiologis murni'],a:0,h:'Kata kunci: “dari… hingga…”.',e:'Satu tema yang memanjang dalam waktu = diakronik (seperti video).'},
+  {q:'Mengkaji kehidupan ekonomi, sosial, dan budaya Kerajaan Majapahit pada abad ke-14 termasuk kajian…',o:['Sinkronik','Diakronik','Kronologis murni','Heuristik'],a:0,h:'Satu periode, banyak aspek.',e:'Satu kurun waktu dengan banyak aspek = sinkronik (seperti foto).'},
+  {q:'Wisata ke Candi Borobudur sambil menikmati kisah pembangunannya menunjukkan fungsi sejarah yang…',o:['Edukatif','Inspiratif','Rekreatif','Instruktif'],a:2,h:'Ada unsur menyenangkan dan hiburan.',e:'Wisata dan hiburan bernuansa sejarah = fungsi rekreatif.'},
+  {q:'Urutan langkah metode penelitian sejarah yang benar adalah…',o:['Heuristik → Kritik → Interpretasi → Historiografi','Kritik → Heuristik → Historiografi → Interpretasi','Interpretasi → Heuristik → Kritik → Historiografi','Historiografi → Heuristik → Kritik → Interpretasi'],a:0,h:'Kumpulkan dulu sebelum menguji, menafsirkan, lalu menulis.',e:'Kumpulkan sumber, uji, tafsirkan, lalu tulis.'},
+  {q:'Sejarawan memeriksa jenis kertas, tinta, dan gaya tulisan sebuah naskah kuno untuk memastikan keasliannya. Ini disebut…',o:['Kritik ekstern','Kritik intern','Heuristik','Historiografi'],a:0,h:'Yang diperiksa adalah “kulit luar” sumber.',e:'Kritik ekstern menguji keaslian (otentisitas) sumber.'},
+  {q:'Manakah yang termasuk sumber primer tentang Perang Diponegoro?',o:['Babad Diponegoro yang ditulis Pangeran Diponegoro','Buku pelajaran SMA terbitan terbaru','Film dokumenter tahun 2015','Artikel populer di blog sejarah'],a:0,h:'Dibuat oleh pelaku sendiri.',e:'Sumber primer berasal dari pelaku atau saksi sezaman.'}
+ ],
+ real:[
+  {id:'analogi',icon:'📱',title:'Analogi Masa Kini',sub:'Sejarah dalam dunia digitalmu',html:`
+  <h2>📱 Analogi Masa Kini</h2>
+  <div class="grid">
+   <div class="tile"><div class="em">🌳</div><h4>Pohon = Family Tree</h4>Syajaratun mirip bagan keluarga atau fitur “asal-usul” di aplikasi silsilah: menelusuri dari mana sesuatu berasal.</div>
+   <div class="tile"><div class="em">📸</div><h4>Sinkronik = Screenshot</h4>Satu layar, satu momen, tetapi memuat banyak hal sekaligus: notifikasi, chat, jam, baterai.</div>
+   <div class="tile"><div class="em">🎞️</div><h4>Diakronik = Video / Linimasa</h4>Seperti merekam <i>time-lapse</i> atau menggulir linimasa akunmu dari 2018 sampai sekarang untuk melihat perubahannya.</div>
+   <div class="tile"><div class="em">🕵️</div><h4>Metodologi = Cek Fakta Hoaks</h4><b>Heuristik</b>: kumpulkan tangkapan layar &amp; tautan. <b>Kritik</b>: siapa pembuatnya, asli atau editan? <b>Interpretasi</b>: apa maksudnya? <b>Historiografi</b>: tulis klarifikasi.</div>
+   <div class="tile"><div class="em">🗺️</div><h4>Fungsi Sejarah = Riwayat GPS</h4>Aplikasi peta menyimpan riwayat perjalanan agar kamu tak tersesat di jalan yang sama. Sejarah juga “riwayat perjalanan” bangsa.</div>
+  </div>`},
+  {id:'banding',icon:'⚖️',title:'Perbandingan',sub:'Sejarah vs kehidupan sekarang',html:`
+  <h2>⚖️ Perbandingan Konsep</h2>
+  <table><tr><th>Konsep sejarah</th><th>Contoh di masa kini</th></tr>
+  <tr><td><b>Sumber primer</b></td><td>Tangkapan layar asli percakapan, rekaman suara asli, kuitansi pembelian</td></tr>
+  <tr><td><b>Sumber sekunder</b></td><td>Berita yang membahas percakapan itu, rangkuman video, ulasan kreator</td></tr>
+  <tr><td><b>Kritik ekstern</b></td><td>Memeriksa apakah foto itu editan (metadata, tanggal, resolusi)</td></tr>
+  <tr><td><b>Kritik intern</b></td><td>Menilai apakah akun yang memposting kredibel dan punya bukti</td></tr>
+  <tr><td><b>Historiografi</b></td><td>Menulis laporan atau artikel hasil penelusuranmu</td></tr>
+  <tr><td><b>Fungsi edukatif</b></td><td>Pemain gim menonton ulang rekaman pertandingan untuk memperbaiki strategi</td></tr></table>
+  <h3>Sinkronik vs Diakronik di kelasmu</h3>
+  <table><tr><th>Sinkronik</th><th>Diakronik</th></tr>
+  <tr><td>Potret kehidupan siswa SMA tahun 2026 (belajar, gawai, kantin, ekskul)</td><td>Perubahan cara siswa mengerjakan tugas dari buku tulis → komputer → AI</td></tr></table>`}
+ ],
+ cases:[
+  {q:'Kamu membuat linimasa “alat komunikasi dari telegraf, telepon, hingga smartphone”. Pendekatan ini setara dengan…',o:['Diakronik','Sinkronik','Primer','Kritik intern'],a:0,h:'Ada perubahan sepanjang waktu.',e:'Satu tema yang berkembang sepanjang waktu = diakronik.'},
+  {q:'Kamu menggambarkan secara luas kehidupan remaja tahun 2026 (ekonomi, budaya, teknologi) dalam satu laporan. Ini pendekatan…',o:['Sinkronik','Diakronik','Heuristik','Instruktif'],a:0,h:'Satu tahun, banyak aspek.',e:'Satu kurun waktu dengan berbagai aspek = sinkronik.'},
+  {q:'Ada pesan viral berisi “bukti” sebuah peristiwa. Kamu mengecek siapa pembuatnya, kapan dibuat, dan apakah punya saksi. Ini mirip…',o:['Kritik sumber (ekstern & intern)','Historiografi','Sintesis','Fungsi rekreatif'],a:0,h:'Menguji sebelum percaya.',e:'Menguji keaslian dan kredibilitas sumber adalah kritik sumber.'},
+  {q:'Seorang atlet mempelajari rekaman pertandingan lama untuk memperbaiki strateginya. Ini mencerminkan fungsi sejarah yang…',o:['Edukatif','Rekreatif','Sinkronik','Primer'],a:0,h:'Belajar dari pengalaman masa lalu.',e:'Belajar dari pengalaman lampau = edukatif.'}
+ ]},
+
+{id:2,title:'Chapter 2',sub:'Interaksi Nusantara, Maritim, Rempah & Jalur Rempah',
+ topics:[
+ {id:'n1',icon:'🌏',title:'Interaksi Awal dengan Dunia',sub:'Nusantara di persimpangan',html:`
+  <h2>🌏 Interaksi Awal Masyarakat Nusantara dengan Dunia</h2>
+  <h3>Posisi silang yang strategis</h3>
+  <p>Nusantara terletak di antara <b>dua benua</b> (Asia dan Australia) dan <b>dua samudra</b> (Hindia dan Pasifik). Selat Malaka, Sunda, dan Lombok menjadi gerbang pelayaran. <b>Angin muson</b> (barat dan timur) mengatur jadwal pelayaran, sehingga kapal harus singgah menunggu angin dan di situlah <b>kota-kota pelabuhan</b> tumbuh.</p>
+  <h3>Jejak kontak</h3>
+  <div class="flow">
+   <div><b>± 4.000 th lalu</b>Penutur Austronesia berlayar dari Taiwan melalui Filipina ke Nusantara, lalu menyebar hingga Madagaskar dan Pasifik.</div>
+   <div><b>Awal Masehi</b>Kontak dengan India: Hindu–Buddha. Contoh: Prasasti Yupa Kutai (abad ke-4).</div>
+   <div><b>Abad ke-5 &amp; 7</b>Peziarah Tiongkok, Faxian dan I-Tsing; I-Tsing belajar di Sriwijaya.</div>
+   <div><b>Abad ke-7–13</b>Pedagang Arab, Persia, dan Gujarat; Islam berkembang, misalnya Samudera Pasai (abad ke-13).</div>
+  </div>
+  <h3>Bukti sejarah</h3>
+  <p>Prasasti, catatan musafir asing, <b>nekara perunggu</b> tipe Dongson, manik-manik, dan keramik asing di situs-situs Nusantara.</p>
+  <div class="box">Bangsa Nusantara bukan penonton: pelaut dan pedagang lokal aktif <b>berlayar, memilih, dan memadukan</b> budaya asing dengan budaya sendiri.</div>`},
+ {id:'n2',icon:'⛵',title:'Sejarah Maritim Nusantara',sub:'Laut sebagai penghubung',html:`
+  <h2>⛵ Sejarah Maritim Nusantara</h2>
+  <h3>Teknologi pelayaran</h3>
+  <p>Perahu <b>bercadik</b> khas Austronesia stabil di laut. Relief kapal di <b>Candi Borobudur</b> (abad ke-8–9) menampilkan perahu bercadik berlayar besar. Kapal <b>jung</b> Jawa mengangkut barang dan pasukan lintas laut; <b>pinisi</b> Bugis–Makassar bahkan diakui UNESCO sebagai warisan budaya takbenda (2017).</p>
+  <h3>Kerajaan maritim</h3>
+  <div class="grid">
+   <div class="tile"><div class="em">🔱</div><h4>Sriwijaya (abad ke-7–13)</h4>Menguasai Selat Malaka, pusat perdagangan dan pendidikan Buddha.</div>
+   <div class="tile"><div class="em">🌅</div><h4>Majapahit (abad ke-13–15)</h4>Gajah Mada bersumpah (Sumpah Palapa) menyatukan Nusantara; armada besar dan jaringan dagang luas.</div>
+   <div class="tile"><div class="em">🧭</div><h4>Gowa-Tallo &amp; Bugis–Makassar</h4>Pelaut ulung, Makassar bandar bebas; hukum niaga laut <i>Amanna Gappa</i>.</div>
+  </div>
+  <h3>Dari laut sebagai pemisah menjadi pemersatu</h3>
+  <p>Pada <b>13 Desember 1957</b>, <b>Deklarasi Djuanda</b> menyatakan laut di antara pulau-pulau adalah bagian dari wilayah Indonesia. Gagasan ini kemudian diakui dunia lewat <b>UNCLOS 1982</b>. Tanggal itu diperingati sebagai <b>Hari Nusantara</b>.</p>
+  <div class="box blue">Pesan sejarah: leluhur kita pelaut. Laut bukan batas, tetapi <b>jalan raya</b> yang menghubungkan pulau-pulau.</div>`},
+ {id:'n3',icon:'🌿',title:'Rempah & Jalur Rempah',sub:'Emas dari Nusantara',html:`
+  <h2>🌿 Sejarah Rempah dan Jalur Rempah</h2>
+  <h3>Rempah Nusantara</h3>
+  <ul>
+   <li><b>Cengkih</b>: asli Maluku (Ternate, Tidore)</li>
+   <li><b>Pala &amp; fuli</b>: Kepulauan Banda</li>
+   <li><b>Lada</b>: Sumatra dan Banten; juga <b>kayu manis</b></li>
+  </ul>
+  <p>Rempah dipakai sebagai bumbu, pengawet makanan, obat, wewangian, dan bahan ritual, sehingga nilainya sangat tinggi.</p>
+  <h3>Jalur Rempah</h3>
+  <p>Jaringan pelayaran dan perdagangan: <b>Maluku → Makassar/Gresik/Banten → Malaka → India → Teluk Persia/Laut Merah → Mediterania</b>. Yang berpindah bukan hanya barang, tetapi juga <b>agama, bahasa, teknologi, seni, dan kuliner</b>.</p>
+  <h3>Datangnya bangsa Eropa</h3>
+  <div class="flow">
+   <div><b>1511</b>Portugis merebut Malaka.</div>
+   <div><b>1602</b>VOC (Belanda) berdiri dan menerapkan monopoli.</div>
+   <div><b>1621</b>Perang Banda: monopoli pala diperketat dengan kekerasan.</div>
+   <div><b>Abad ke-18</b>Bibit cengkih dibawa keluar dari Maluku; monopoli melemah.</div>
+  </div>
+  <div class="box"><b>Pelajaran:</b> kekayaan alam membawa kemakmuran sekaligus ancaman bila dikuasai pihak lain. Warisan Jalur Rempah masih hidup dalam kuliner (rendang, sate), bahasa serapan, dan kota-kota pelabuhan tua.</div>`}
+ ],
+ videos:[
+  {id:'v3',yt:'fj2xxbx_OHQ',start:0,title:'Sejarah Rempah',sub:'Rempah Nusantara dan dunia'},
+  {id:'v4',yt:'9hIlQyw9XKA',start:0,title:'Jalur Rempah',sub:'Rute perdagangan dan budaya'}
+ ],
+ quiz:[
+  {q:'Letak strategis Nusantara adalah di antara…',o:['Benua Asia–Australia dan Samudra Hindia–Pasifik','Benua Afrika–Eropa dan Samudra Atlantik','Benua Amerika dan Samudra Arktik','Benua Eropa dan Samudra Hindia'],a:0,h:'Dua benua, dua samudra.',e:'Posisi silang ini menjadikan Nusantara jalur lalu lintas dunia.'},
+  {q:'Perahu khas penutur Austronesia yang stabil di laut karena memiliki penyeimbang di sisinya adalah…',o:['Perahu bercadik','Kapal uap','Rakit tanpa layar','Kapal tongkang'],a:0,h:'Ada “cadik” di samping lambung perahu.',e:'Perahu bercadik tampak pada relief Borobudur.'},
+  {q:'Pendeta Tiongkok I-Tsing pada abad ke-7 belajar dan singgah di…',o:['Sriwijaya','Majapahit','Samudera Pasai','Mataram Kuno'],a:0,h:'Kerajaan maritim di Sumatra.',e:'Sriwijaya adalah pusat perdagangan dan pendidikan Buddha.'},
+  {q:'Kerajaan yang menguasai Selat Malaka dan menjadi pusat pelayaran pada abad ke-7–13 adalah…',o:['Sriwijaya','Singasari','Kediri','Demak'],a:0,h:'Berpusat di sekitar Palembang.',e:'Kontrol atas Selat Malaka menjadikan Sriwijaya kaya.'},
+  {q:'Sumpah Palapa untuk menyatukan Nusantara diucapkan oleh…',o:['Gajah Mada','Hayam Wuruk','Airlangga','Raden Wijaya'],a:0,h:'Mahapatih Majapahit.',e:'Gajah Mada bersumpah tidak menikmati palapa sebelum Nusantara bersatu.'},
+  {q:'Inti Deklarasi Djuanda 13 Desember 1957 adalah…',o:['Laut di antara pulau-pulau adalah bagian wilayah Indonesia','Indonesia merdeka dari Belanda','Pembentukan ASEAN','Larangan berlayar di laut lepas'],a:0,h:'Laut sebagai pemersatu, bukan pemisah.',e:'Deklarasi ini melahirkan konsep Wawasan Nusantara dan diakui UNCLOS 1982.'},
+  {q:'Cengkih dan pala berasal dari wilayah…',o:['Maluku','Sumatra bagian barat saja','Papua Selatan','Kalimantan Selatan'],a:0,h:'Disebut “Kepulauan Rempah”.',e:'Cengkih dari Maluku Utara dan pala dari Banda.'},
+  {q:'Bangsa Eropa pertama yang merebut Malaka pada 1511 adalah…',o:['Portugis','Belanda','Inggris','Prancis'],a:0,h:'Dipimpin Alfonso de Albuquerque.',e:'Portugis merebut Malaka untuk menguasai jalur rempah.'},
+  {q:'Tujuan utama VOC menerapkan monopoli rempah adalah…',o:['Mengontrol pasokan dan harga untuk keuntungan maksimal','Meningkatkan kesejahteraan petani lokal','Menyebarkan budaya lokal ke Eropa','Mengakhiri perdagangan antarpulau'],a:0,h:'Pikirkan siapa yang menetapkan harga.',e:'Monopoli membuat VOC menentukan harga dan menyingkirkan pesaing.'},
+  {q:'Dampak penting Jalur Rempah selain perdagangan adalah…',o:['Pertukaran budaya, bahasa, agama, dan kuliner','Hilangnya seluruh budaya lokal','Terputusnya hubungan antarpulau','Berhentinya pelayaran'],a:0,h:'Yang berpindah bukan hanya barang.',e:'Jalur Rempah adalah jalur pertukaran budaya yang kaya.'}
+ ],
+ real:[
+  {id:'analogi',icon:'🛰️',title:'Analogi Masa Kini',sub:'Rempah, laut, dan dunia modern',html:`
+  <h2>🛰️ Analogi Masa Kini</h2>
+  <div class="grid">
+   <div class="tile"><div class="em">🔋</div><h4>Rempah = Komoditas Strategis</h4>Dulu cengkih dan pala diperebutkan dunia. Kini ada nikel untuk baterai kendaraan listrik dan kopi spesialti Nusantara.</div>
+   <div class="tile"><div class="em">✈️</div><h4>Selat Malaka = Bandara Hub</h4>Seperti bandara transit besar, kapal-kapal singgah, bongkar muat, dan bertukar kabar di sana.</div>
+   <div class="tile"><div class="em">🛒</div><h4>Pelabuhan = Marketplace</h4>Banten, Gresik, dan Makassar dulu seperti pusat belanja daring: pedagang dari banyak negara bertemu.</div>
+   <div class="tile"><div class="em">🌬️</div><h4>Angin Muson = Jadwal Penerbangan</h4>Pelaut mengikuti pola angin seperti kita mengikuti jadwal; yang paham jadwal, paling untung.</div>
+   <div class="tile"><div class="em">🏷️</div><h4>Monopoli VOC = Pemain Tunggal</h4>Satu pihak menguasai pasokan dan menetapkan harga, mirip satu perusahaan yang menguasai seluruh stok.</div>
+  </div>`},
+  {id:'banding',icon:'⚖️',title:'Perbandingan',sub:'Dulu vs sekarang',html:`
+  <h2>⚖️ Perbandingan Dulu dan Sekarang</h2>
+  <table><tr><th>Aspek</th><th>Masa Jalur Rempah</th><th>Masa kini</th></tr>
+  <tr><td>Komoditas</td><td>Cengkih, pala, lada</td><td>Nikel, kopi, minyak sawit</td></tr>
+  <tr><td>Kendaraan</td><td>Jung, pinisi, perahu bercadik</td><td>Kapal kontainer, pesawat kargo</td></tr>
+  <tr><td>Navigasi</td><td>Bintang dan angin muson</td><td>GPS dan satelit</td></tr>
+  <tr><td>Pusat transaksi</td><td>Bandar: Malaka, Banten, Makassar</td><td>Pelabuhan hub, marketplace</td></tr>
+  <tr><td>Aturan niaga</td><td>Hukum <i>Amanna Gappa</i></td><td>Hukum laut internasional (UNCLOS)</td></tr>
+  <tr><td>Pertukaran budaya</td><td>Agama, bahasa, kuliner</td><td>Tren, musik, gim, media sosial</td></tr></table>`}
+ ],
+ cases:[
+  {q:'Rempah pada masa lalu paling mirip dengan komoditas masa kini seperti…',o:['Nikel untuk baterai','Buku tulis','Kerupuk','Tiket konser'],a:0,h:'Diperebutkan banyak negara karena dibutuhkan industri.',e:'Komoditas bernilai tinggi dan strategis.'},
+  {q:'Selat Malaka pada masa Sriwijaya paling tepat dianalogikan dengan…',o:['Bandara hub internasional','Taman kota','Kantin sekolah','Gudang rumah'],a:0,h:'Tempat singgah banyak pihak.',e:'Hub transit tempat banyak pelaku bertemu.'},
+  {q:'Satu perusahaan menguasai seluruh pasokan dan menetapkan harga sesukanya. Ini mirip dengan…',o:['Monopoli VOC','Perdagangan bebas Makassar','Pertukaran budaya','Deklarasi Djuanda'],a:0,h:'Kontrol penuh atas pasokan.',e:'VOC menerapkan monopoli untuk mengatur harga.'},
+  {q:'Pengakuan wilayah laut Indonesia melalui Deklarasi Djuanda dan UNCLOS mirip dengan…',o:['Sertifikat tanah yang diakui secara resmi','Menghapus pagar rumah','Menjual rumah ke tetangga','Meminjam tanah tetangga'],a:0,h:'Kepemilikan yang diakui pihak lain.',e:'Pengakuan hukum atas wilayah.'}
+ ]}
+];
+
+/* =====================  STATE & XP  ===================== */
+const $=s=>document.querySelector(s);
+const KEY='jejak_waktu_nusantara_v1';
+let S=(function(){try{const j=JSON.parse(localStorage.getItem(KEY));if(j&&typeof j.xp==='number')return j}catch(e){}return {xp:0,name:'',done:{},earned:{},best:{},vid:{}}})();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const app=$('#app');
+function lvl(){return Math.floor(S.xp/100)+1}
+function updateHUD(){const l=lvl();$('#lv').textContent=l;$('#lvn').textContent=LEVELS[Math.min(l-1,LEVELS.length-1)];$('#xpt').textContent=S.xp+' XP';$('#xpf').style.width=(S.xp%100)+'%'}
+function addXP(n,why){
+  const before=S.xp;S.xp=Math.max(0,S.xp+n);const d=S.xp-before;save();updateHUD();
+  const p=document.createElement('div');p.className='pop';
+  if(n<0){p.style.color=d===0?'#ffb4b0':'#ff6b66';p.textContent=d===0?'XP sudah 0':'−'+Math.abs(d)+' XP'}
+  else{p.style.color='#7dffa8';p.textContent='+'+n+' XP'}
+  $('#hud').appendChild(p);setTimeout(()=>p.remove(),1700);
+  if(Math.floor(before/100)<Math.floor(S.xp/100)) toast('🎉 Naik level! Kamu sekarang Lv '+lvl());
+  return d;
+}
+let tt;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2600)}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const getCH=id=>CH.find(c=>c.id===id);
+
+/* status per tahap */
+const K={m:(c,id)=>`${c}.m.${id}`,v:(c,id)=>`${c}.v.${id}`,r:(c,id)=>`${c}.r.${id}`,quiz:c=>`${c}.quiz`,case:c=>`${c}.case`};
+function stageDone(c,s){
+  if(s==='materi')return c.topics.every(t=>S.done[K.m(c.id,t.id)]);
+  if(s==='video')return c.videos.every(v=>S.done[K.v(c.id,v.id)]);
+  if(s==='quiz')return !!S.done[K.quiz(c.id)];
+  if(s==='real')return c.real.every(p=>S.done[K.r(c.id,p.id)])&&!!S.done[K.case(c.id)];
+}
+const chDone=c=>['materi','video','quiz','real'].every(s=>stageDone(c,s));
+const chLocked=i=>i>0&&!chDone(CH[i-1]);
+function mark(key,xp,why){
+  if(S.done[key])return false;
+  S.done[key]=true;save();if(xp)addXP(xp,why);checkChapters();return true;
+}
+function checkChapters(){
+  CH.forEach((c,i)=>{
+    if(chDone(c)&&!S.done[c.id+'.bonus']){
+      S.done[c.id+'.bonus']=true;save();addXP(50,'Bonus chapter');
+      const next=CH[i+1];
+      $('#mb').innerHTML=`<div class="big">🏆</div><h2 style="margin:8px 0">${c.title} Selesai!</h2><p>Kamu mendapat <b style="color:#ffd34d">+50 XP</b> bonus.</p><p style="margin-top:8px">${next?'<b>'+next.title+'</b> kini terbuka. Lanjutkan petualanganmu!':'Seluruh episode tamat. Kamu resmi menjadi Sejarawan Muda!'}</p><div class="act" style="justify-content:center"><button class="btn" id="mok">Lanjut</button></div>`;
+      $('#modal').classList.add('on');$('#mok').onclick=()=>{$('#modal').classList.remove('on');render()};
+    }
+  });
+}
+
+/* =====================  NAVIGASI  ===================== */
+let nav=[{screen:'splash',args:{}}];
+function go(screen,args={}){nav.push({screen,args});render()}
+function back(){if(nav.length>1){nav.pop();render()}}
+$('#back').onclick=back;
+function setTop(title,canBack,mode){
+  $('#ttl').textContent=title;$('#back').style.display=canBack?'':'none';
+  $('#hud').style.display=mode==='splash'?'none':'';
+  document.body.dataset.mode=mode||'menu';
+}
+let menuKeys=null;
+document.addEventListener('keydown',e=>{if(menuKeys)menuKeys(e)});
+function render(){cleanupVideo();menuKeys=null;const {screen,args}=nav[nav.length-1];app.scrollTop=0;R[screen](args);updateHUD()}
+
+/* komponen menu bergaya gim */
+function menu(o){
+  const a=o.args;setTop(o.title,nav.length>1,'menu');
+  let s=a.sel||0;
+  app.innerHTML=`<div class="menu">${o.items.map((it,i)=>`<div class="card${it.locked?' locked':''}" data-i="${i}"><div><h3>${it.icon?it.icon+' ':''}${it.title}${it.locked?' 🔒':''}${it.done?' ✅':''}</h3><div class="sub">${it.sub}</div></div><span class="chev">›</span></div>`).join('')}</div><button class="cta" id="cta"></button>`;
+  const cards=[...app.querySelectorAll('.card')],cta=$('#cta');
+  function paint(){a.sel=s;cards.forEach((c,i)=>c.dataset.d=Math.min(Math.abs(i-s),3));const it=o.items[s];cta.disabled=!!it.locked;cta.textContent=it.locked?'Terkunci 🔒':o.btn(it)}
+  function open(){const it=o.items[s];if(it.locked){toast(it.lockMsg||'Masih terkunci');return}o.onOpen(it,s)}
+  cards.forEach((c,i)=>c.onclick=()=>{if(i===s)open();else{s=i;paint()}});
+  cta.onclick=open;
+  menuKeys=e=>{if(e.key==='ArrowDown'&&s<cards.length-1){s++;paint()}else if(e.key==='ArrowUp'&&s>0){s--;paint()}else if(e.key==='Enter')open()};
+  app.querySelector('.menu').onwheel=e=>{if(e.deltaY>0&&s<cards.length-1){s++;paint()}else if(e.deltaY<0&&s>0){s--;paint()}};
+  paint();
+}
+
+/* =====================  LAYAR  ===================== */
+const R={};
+R.splash=()=>{
+  setTop('',false,'splash');
+  app.innerHTML=`<div class="splash"><small>EPISODE 1</small><h1>Jejak Waktu<br>Nusantara</h1><p>Belajar sejarah sambil bertualang. Kumpulkan XP, buka chapter, dan jadilah Sejarawan Muda!</p><input id="nm" maxlength="20" placeholder="Nama petualang" value="${(S.name||'').replace(/"/g,'')}"><button class="cta" id="go">⚓ Mulai Petualangan</button>${S.xp>0||Object.keys(S.done).length?'<button class="linkbtn" id="rs">Hapus progres &amp; mulai dari awal</button>':''}</div>`;
+  $('#go').onclick=()=>{S.name=$('#nm').value.trim();save();go('chapters')};
+  const r=$('#rs');if(r)r.onclick=()=>{if(confirm('Hapus semua XP dan progres?')){S={xp:0,name:'',done:{},earned:{},best:{},vid:{}};save();render()}};
+};
+R.chapters=a=>menu({title:'Episode 1 · Jejak Waktu Nusantara',args:a,
+  items:CH.map((c,i)=>({title:c.title,sub:c.sub,locked:chLocked(i),done:chDone(c),lockMsg:'Selesaikan '+(CH[i-1]?CH[i-1].title:'')+' dulu untuk membuka ini',id:c.id})),
+  btn:it=>'Buka '+it.title,onOpen:it=>go('stages',{ch:it.id})});
+R.stages=a=>{
+  const c=getCH(a.ch),n=(arr,f)=>arr.filter(f).length;
+  menu({title:c.title+' · '+c.sub,args:a,btn:it=>it.btnl,onOpen:it=>{
+      if(it.k==='quiz')go('quiz',{ch:c.id,mode:'quiz'});else go('list',{ch:c.id,kind:it.k});
+    },
+    items:[
+     {k:'materi',icon:'📖',title:'Materi',sub:`${n(c.topics,t=>S.done[K.m(c.id,t.id)])}/${c.topics.length} topik dibaca`,done:stageDone(c,'materi'),btnl:'Buka Materi'},
+     {k:'video',icon:'🎬',title:'Video Belajar',sub:`${n(c.videos,v=>S.done[K.v(c.id,v.id)])}/${c.videos.length} video ditonton`,done:stageDone(c,'video'),btnl:'Tonton Video'},
+     {k:'quiz',icon:'🎯',title:'Simulasi Soal',sub:S.best[K.quiz(c.id)]!=null?`Skor terbaik: ${S.best[K.quiz(c.id)]}%`:'10 soal · benar +10 XP, salah −5 XP',done:stageDone(c,'quiz'),btnl:'Mulai Simulasi'},
+     {k:'real',icon:'🌍',title:'Dunia Nyata',sub:'Analogi, perbandingan & tantangan kasus',done:stageDone(c,'real'),btnl:'Jelajahi'}
+    ]});
+};
+R.list=a=>{
+  const c=getCH(a.ch);
+  if(a.kind==='materi')menu({title:c.title+' · Materi',args:a,btn:it=>'Baca Materi',
+    items:c.topics.map(t=>({...t,done:S.done[K.m(c.id,t.id)]})),onOpen:it=>go('reader',{ch:c.id,page:it.id,kind:'m'})});
+  else if(a.kind==='real')menu({title:c.title+' · Dunia Nyata',args:a,
+    btn:it=>it.id==='case'?'Terima Tantangan':'Buka',
+    items:[...c.real.map(p=>({...p,done:S.done[K.r(c.id,p.id)]})),{id:'case',icon:'🎯',title:'Tantangan Kasus',sub:'Terapkan konsep pada situasi nyata',done:S.done[K.case(c.id)]}],
+    onOpen:it=>it.id==='case'?go('quiz',{ch:c.id,mode:'case'}):go('reader',{ch:c.id,page:it.id,kind:'r'})});
+  else menu({title:c.title+' · Video Belajar',args:a,btn:it=>'Tonton Sekarang',
+    items:c.videos.map((v,i)=>({...v,icon:'🎬',done:S.done[K.v(c.id,v.id)],locked:i>0&&!S.done[K.v(c.id,c.videos[i-1].id)],lockMsg:'Selesaikan video sebelumnya dulu'})),
+    onOpen:it=>go('video',{ch:c.id,vid:it.id})});
+};
+R.reader=a=>{
+  const c=getCH(a.ch),p=(a.kind==='m'?c.topics:c.real).find(x=>x.id===a.page),key=K[a.kind](c.id,p.id),done=S.done[key];
+  setTop(p.title,true,'page');
+  app.innerHTML=`<div class="page"><div class="panel">${p.html}<div class="act"><button class="btn" id="fin" ${done?'disabled':''}>${done?'✅ Sudah dibaca':'Selesai Membaca · +5 XP'}</button><button class="btn ghost" id="bk">← Daftar</button></div></div></div>`;
+  $('#fin').onclick=()=>{mark(key,5,'Membaca');if(nav[nav.length-1].args===a)R.reader(a)};
+  $('#bk').onclick=back;
+};
+
+/* ---------- KUIS ---------- */
+R.quiz=a=>{
+  const c=getCH(a.ch),isCase=a.mode==='case',src=isCase?c.cases:c.quiz,key=isCase?K.case(c.id):K.quiz(c.id);
+  if(!a.qs){a.qs=shuffle(src.map((q,i)=>({...q,id:`${c.id}.${isCase?'c':'q'}.${i}`,opts:shuffle(q.o.map((t,k)=>({t,ok:k===q.a})))})));a.i=0;a.right=0;a.streak=0;a.st=null;a.hint=false}
+  setTop(c.title+' · '+(isCase?'Tantangan Kasus':'Simulasi Soal'),true,'page');
+  const total=a.qs.length;
+  if(a.i>=total){
+    const pct=Math.round(a.right/total*100),pass=pct>=60;
+    S.best[key]=Math.max(S.best[key]||0,pct);save();
+    let bonus='';if(pass&&!S.done[key]){bonus='<p>Lulus pertama kali: <b style="color:#7dffa8">+15 XP</b></p>';mark(key,15,'Lulus')}
+    app.innerHTML=`<div class="page"><div class="panel center"><div class="big">${pass?'🎉':'💪'}</div><h2>${pass?'Kerja bagus!':'Hampir berhasil!'}</h2><p style="font-size:22px">Skor: <b>${a.right}/${total}</b> (${pct}%)</p><p>${pass?'Kamu lulus (batas 60%).':'Capai minimal 60% untuk lulus. Baca materi lagi, lalu ulangi!'}</p>${bonus}<div class="act" style="justify-content:center"><button class="btn" id="rt">🔁 Ulangi</button><button class="btn ghost" id="bk">Kembali ke menu</button></div></div></div>`;
+    $('#rt').onclick=()=>{nav[nav.length-1].args={ch:a.ch,mode:a.mode};render()};$('#bk').onclick=back;return;
+  }
+  const q=a.qs[a.i],st=a.st;
+  app.innerHTML=`<div class="page"><div class="panel">
+   <div class="qhead"><span>Soal ${a.i+1} / ${total}</span><span>🔥 Runtutan benar: <b>${a.streak}</b> · Skor sementara: ${a.right}</span></div>
+   <div class="qbar"><i style="width:${(a.i+(st?1:0))/total*100}%"></i></div>
+   <div class="qtext">${q.q}</div>
+   <div id="opts">${q.opts.map((o,k)=>`<button class="opt${st?(o.ok?' ok':(st.k===k?' bad':'')):''}" data-k="${k}" ${st?'disabled':''}>${String.fromCharCode(65+k)}. ${o.t}</button>`).join('')}</div>
+   ${a.hint&&!st?`<div class="fb">💡 <b>Petunjuk:</b> ${q.h}</div>`:''}
+   ${st?`<div class="fb"><b style="color:${st.ok?'#7dffa8':'#ff8a85'}">${st.ok?'✅ Benar!':'❌ Kurang tepat.'}</b> ${st.msg}<br>${q.e}</div>`:''}
+   <div class="act">${st?`<button class="btn" id="nx">${a.i+1<total?'Soal berikutnya →':'Lihat hasil'}</button>`:`<button class="btn ghost" id="hn" ${a.hint?'disabled':''}>💡 Petunjuk (−3 XP)</button>`}</div>
+  </div></div>`;
+  app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+    const k=+b.dataset.k,ok=q.opts[k].ok;let msg='';
+    if(ok){a.right++;a.streak++;let g=0;
+      if(!S.earned[q.id]){g=10;S.earned[q.id]=true;if(a.streak>=3)g+=5}
+      if(g){addXP(g);msg=`<b style="color:#7dffa8">+${g} XP</b>${a.streak>=3?' (bonus runtutan 🔥)':''}`}else msg='<span style="opacity:.8">XP soal ini sudah pernah kamu ambil.</span>';
+    }else{a.streak=0;addXP(-5);msg='<b style="color:#ff8a85">−5 XP</b>'}
+    save();a.st={k,ok,msg};R.quiz(a);
+  });
+  const hn=$('#hn');if(hn)hn.onclick=()=>{a.hint=true;addXP(-3);R.quiz(a)};
+  const nx=$('#nx');if(nx)nx.onclick=()=>{a.i++;a.st=null;a.hint=false;R.quiz(a)};
+};
+
+/* ---------- VIDEO (tidak bisa di-skip) ---------- */
+let player=null,poll=null,ytq=[];
+function cleanupVideo(){clearInterval(poll);poll=null;if(player){try{player.destroy()}catch(e){}player=null}}
+function loadYT(cb){
+  if(window.YT&&YT.Player){cb();return}
+  ytq.push(cb);
+  if(!document.getElementById('yt-api')){
+    const s=document.createElement('script');s.id='yt-api';s.src='https://www.youtube.com/iframe_api';
+    s.onerror=()=>ytq.splice(0).forEach(f=>f(true));document.head.appendChild(s);
+    window.onYouTubeIframeAPIReady=()=>ytq.splice(0).forEach(f=>f());
+  }
+}
+const fmt=t=>{t=Math.max(0,Math.floor(t||0));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
+R.video=a=>{
+  const c=getCH(a.ch),v=c.videos.find(x=>x.id===a.vid),key=K.v(c.id,v.id),already=!!S.done[key];
+  setTop(v.title,true,'page');
+  let maxT=already?0:(S.vid[key]||v.start||0),lastSave=0,finished=already;
+  app.innerHTML=`<div class="page"><div class="panel">
+   <h2>🎬 ${v.title}</h2>
+   <div class="vwrap"><div id="yt"></div><div class="vshield" id="sh"></div><div class="vplay" id="bp">▶</div></div>
+   <div class="vctl"><button class="btn" id="pp">▶ Putar</button><div class="vbar"><i id="vf"></i></div><span id="vt">0:00</span></div>
+   <p class="lockmsg" id="vs">🔒 Tonton sampai habis untuk membuka tombol lanjut. Tombol maju/mundur dinonaktifkan. Selesai menonton: <b>+20 XP</b>.</p>
+   <div class="act"><button class="btn" id="vn" ${finished?'':'disabled'}>${finished?'Lanjut →':'Selesaikan video dulu'}</button></div>
+  </div></div>`;
+  const status=t=>$('#vs').innerHTML=t;
+  function done(){
+    if(finished&&already)return;finished=true;
+    const first=mark(key,20,'Video selesai');
+    status('✅ Video selesai!'+(first?' <b style="color:#7dffa8">+20 XP</b>':''));
+    const b=$('#vn');b.disabled=false;b.textContent='Lanjut →';
+  }
+  $('#vn').onclick=back;
+  if(already)status('✅ Video ini sudah kamu selesaikan. Kamu boleh menontonnya lagi.');
+  if(location.protocol==='file:'&&!already){setTimeout(()=>fail(153),0)}
+  else loadYT(err=>{
+    if(err||!$('#yt')){fail();return}
+    player=new YT.Player('yt',{videoId:v.yt,playerVars:{controls:0,disablekb:1,rel:0,modestbranding:1,fs:0,playsinline:1,iv_load_policy:3,start:Math.floor(maxT)},
+      events:{
+       onReady:()=>{},
+       onStateChange:e=>{
+         const st=e.data,ps=window.YT.PlayerState;
+         $('#pp').textContent=st===ps.PLAYING?'⏸ Jeda':'▶ Putar';
+         $('#bp').classList.toggle('hide',st===ps.PLAYING);
+         if(st===ps.ENDED){const d=player.getDuration();if(!already&&d&&maxT<d-8){player.seekTo(maxT,true);player.playVideo()}else done()}
+       },
+       onError:e=>fail(e&&e.data)}});
+    poll=setInterval(()=>{
+      if(!player||!player.getCurrentTime)return;
+      const t=player.getCurrentTime(),d=player.getDuration()||0;
+      if(!already){if(t>maxT+2.5){player.seekTo(maxT,true)}else if(t>maxT)maxT=t}
+      else maxT=Math.max(maxT,t);
+      $('#vf').style.width=(d?Math.min(100,(already?t:maxT)/d*100):0)+'%';
+      $('#vt').textContent=fmt(already?t:maxT)+' / '+fmt(d);
+      if(!already&&Date.now()-lastSave>4000){S.vid[key]=Math.floor(maxT);save();lastSave=Date.now()}
+    },400);
+  });
+  const toggle=()=>{if(!player||!player.getPlayerState)return;player.getPlayerState()===1?player.pauseVideo():player.playVideo()};
+  $('#sh').onclick=toggle;$('#pp').onclick=toggle;$('#sh').oncontextmenu=e=>e.preventDefault();
+  function fail(code){
+    if(finished&&already){return}
+    clearInterval(poll);poll=null;
+    const why=(code===153||location.protocol==='file:')?'Halaman dibuka dari file lokal sehingga YouTube menolak memutar di sini (Error 153). ':'Video tidak bisa disematkan di sini. ';
+    $('#yt').parentElement.innerHTML=`<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;text-align:center;background:#0b1530"><div style="font-size:48px">📺</div><div>${why}Tonton videonya di YouTube, lalu kembali ke sini.</div><a class="btn" id="ytl" href="https://www.youtube.com/watch?v=${v.yt}" target="_blank" rel="noopener" style="text-decoration:none">▶ Tonton di YouTube</a></div>`;
+    $('.vctl').style.display='none';
+    const b=$('#vn');let opened=false,left=60,tm=null;
+    b.disabled=true;
+    status('Mode cadangan: klik "Tonton di YouTube", tonton sampai habis, lalu tombol di bawah aktif setelah 60 detik. Selesai: <b>+10 XP</b> (setengah dari mode normal).');
+    $('#ytl').onclick=()=>{if(opened)return;opened=true;tm=setInterval(()=>{left--;b.textContent=left>0?'Tombol aktif dalam '+left+' dtk':'Saya sudah menonton sampai selesai';if(left<=0){clearInterval(tm);b.disabled=false}},1000);b.textContent='Tombol aktif dalam 60 dtk'};
+    b.textContent='Buka video dulu';
+    b.onclick=()=>{if(clearInterval(tm),mark(key,10,'Video')){}back()};
+  }
+  };
+
+/* mulai */
+updateHUD();render();
+</script>
+</body>
+</html>

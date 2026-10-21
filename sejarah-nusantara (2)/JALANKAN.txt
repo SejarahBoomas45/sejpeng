@@ -1,0 +1,11 @@
+CARA MENJALANKAN (agar video YouTube bisa diputar)
+Video YouTube tidak mau diputar jika index.html dibuka dengan klik ganda (Error 153).
+
+Opsi A - di komputer (butuh Python):
+ 1. Buka terminal/CMD di folder ini
+ 2. Ketik:  python -m http.server 8000
+ 3. Buka di browser:  http://localhost:8000
+
+Opsi B - hosting gratis (paling mudah dibagikan ke siswa):
+ Unggah index.html dan latar.jpg ke Netlify Drop (app.netlify.com/drop),
+ GitHub Pages, atau Cloudflare Pages. Lalu buka tautan https yang diberikan.
